@@ -1,6 +1,6 @@
 # core/models.py
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Callable, Optional, Any
 
 from core.enums import JobStage, NarrationStyle
@@ -31,7 +31,7 @@ class Story:
     num_comments: int
     created_utc: float
     permalink: str
-    fetched_at: datetime = field(default_factory=datetime.utcnow)
+    fetched_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     body_raw: Optional[str] = None
 
 

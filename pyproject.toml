@@ -9,6 +9,8 @@ description = "Automated faceless YouTube video creation from Reddit stories."
 requires-python = ">=3.12"
 dependencies = [
     "PySide6>=6.6",
+    "praw>=7.7",
+    "httpx>=0.27",
 ]
 
 [project.optional-dependencies]

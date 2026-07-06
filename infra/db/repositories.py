@@ -58,3 +58,67 @@ def count_jobs_by_status(conn: sqlite3.Connection, status: str) -> int:
     row = conn.execute(
         "SELECT COUNT(*) AS n FROM jobs WHERE status=?", (status,)).fetchone()
     return row["n"] if row else 0
+
+
+# --- Stories ---------------------------------------------------------------
+
+def insert_story(conn, job_id, story) -> int:
+    cur = conn.execute(
+        "INSERT INTO stories (job_id, source, source_id, subreddit, author, "
+        "title, body_raw, body_text, score, num_comments, created_utc, permalink) "
+        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+        (job_id, story.source, story.source_id, story.subreddit, story.author,
+         story.title, story.body_raw, story.body_text, story.score,
+         story.num_comments, story.created_utc, story.permalink),
+    )
+    conn.commit()
+    return cur.lastrowid
+
+
+def get_story_by_job(conn, job_id: int):
+    return conn.execute("SELECT * FROM stories WHERE job_id=?", (job_id,)).fetchone()
+
+
+def list_stories(conn, limit: int = 100) -> list[sqlite3.Row]:
+    return conn.execute(
+        "SELECT * FROM stories ORDER BY id DESC LIMIT ?", (limit,)).fetchall()
+
+
+# --- Scores ----------------------------------------------------------------
+
+def insert_score(conn, story_id: int, score) -> None:
+    conn.execute(
+        "INSERT INTO story_scores (story_id, entertainment, suspense, emotion, "
+        "shock, virality, quality, retention, overall, confidence, model) "
+        "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+        (story_id, score.entertainment, score.suspense, score.emotion, score.shock,
+         score.virality, score.quality, score.retention, score.overall,
+         score.confidence, score.model),
+    )
+    conn.commit()
+
+
+def get_score_by_story(conn, story_id: int):
+    return conn.execute(
+        "SELECT * FROM story_scores WHERE story_id=? ORDER BY id DESC LIMIT 1",
+        (story_id,)).fetchone()
+
+
+# --- Scripts ---------------------------------------------------------------
+
+def insert_script(conn, story_id: int, script) -> int:
+    cur = conn.execute(
+        "INSERT INTO scripts (story_id, style, model, text, word_count, reading_time) "
+        "VALUES (?,?,?,?,?,?)",
+        (story_id,
+         script.style.value if hasattr(script.style, "value") else str(script.style),
+         script.model, script.text, script.word_count, script.reading_time),
+    )
+    conn.commit()
+    return cur.lastrowid
+
+
+def get_script_by_story(conn, story_id: int):
+    return conn.execute(
+        "SELECT * FROM scripts WHERE story_id=? ORDER BY id DESC LIMIT 1",
+        (story_id,)).fetchone()

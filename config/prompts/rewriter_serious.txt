@@ -1,0 +1,13 @@
+Rewrite the following Reddit story as a {style} narration suitable for a
+faceless YouTube short. Rules:
+- Do NOT copy the original text. Rewrite in your own voice.
+- Improve pacing and readability for spoken narration.
+- Maintain the facts and the emotional arc; do not invent events.
+- First person is fine if the original is first person.
+- Aim for ~150 words (about 60 seconds of narration).
+
+Original title: {title}
+Original body:
+{body}
+
+Return ONLY the narration text. No preamble, no labels.

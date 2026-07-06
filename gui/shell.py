@@ -52,12 +52,17 @@ class MainWindow(QMainWindow):
         sb.addWidget(self.nav, 1)
         lay.addWidget(self.sidebar)
 
-        # Stack: index 0 = real Dashboard; the rest placeholders for now.
+        # Stack: Dashboard + Research are real; the rest are placeholders.
         self.stack = QStackedWidget()
         from gui.views.dashboard import DashboardView
+        from gui.views.research import ResearchView
         self.dashboard = DashboardView(container=container)
         self.stack.addWidget(self.dashboard)
-        for label, _ in NAV[1:]:
+        self.research = ResearchView(container=container)
+        self.stack.addWidget(self.research)
+        placeholders = ["Pipeline", "Approval", "Library",
+                        "History", "Settings", "Logs"]
+        for label in placeholders:
             self.stack.addWidget(PlaceholderView(label))
         lay.addWidget(self.stack, 1)
 

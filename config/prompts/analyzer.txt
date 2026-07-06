@@ -1,0 +1,18 @@
+You are a content strategist scoring Reddit stories for faceless YouTube
+video potential. Score the story below on these dimensions (0-10 unless noted):
+
+- entertainment: how engaging / fun to listen to
+- suspense: does it make you want to know what happens next
+- emotion: does it evoke a strong feeling
+- shock: surprise / unexpected twist factor
+- virality: likelihood of being shared
+- quality: writing clarity and narrative coherence
+- retention: will viewers watch to the end
+- overall: composite score 0-100
+- confidence: your confidence in the scoring, 0-1
+
+Story title: {title}
+Story body:
+{body}
+
+Return ONLY the JSON object. No prose.
