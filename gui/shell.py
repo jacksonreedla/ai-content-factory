@@ -52,16 +52,21 @@ class MainWindow(QMainWindow):
         sb.addWidget(self.nav, 1)
         lay.addWidget(self.sidebar)
 
-        # Stack: Dashboard + Research are real; the rest are placeholders.
+        # Stack: Dashboard + Research + Pipeline + Approval are real.
         self.stack = QStackedWidget()
         from gui.views.dashboard import DashboardView
         from gui.views.research import ResearchView
+        from gui.views.pipeline import PipelineView
+        from gui.views.approval import ApprovalView
         self.dashboard = DashboardView(container=container)
         self.stack.addWidget(self.dashboard)
         self.research = ResearchView(container=container)
         self.stack.addWidget(self.research)
-        placeholders = ["Pipeline", "Approval", "Library",
-                        "History", "Settings", "Logs"]
+        self.pipeline = PipelineView(container=container)
+        self.stack.addWidget(self.pipeline)
+        self.approval = ApprovalView(container=container)
+        self.stack.addWidget(self.approval)
+        placeholders = ["Library", "History", "Settings", "Logs"]
         for label in placeholders:
             self.stack.addWidget(PlaceholderView(label))
         lay.addWidget(self.stack, 1)

@@ -25,6 +25,7 @@ class Container:
         self.registry = PluginRegistry()
         self.runner = PipelineRunner()
         self.pool = None
+        self.approval = None
         self._log_handler = None
 
     def bootstrap(self) -> None:
@@ -82,6 +83,21 @@ class Container:
         self.registry.register(PluginInfo(
             name="ducker", version="0.1", contract="music_track",
             label="Ducker", instance=MusicDucker(), config={}))
+        # Phase 4: thumbnails, SEO, publishing.
+        from plugins.thumbnails.pillow_renderer import PillowThumbnailRenderer
+        from plugins.seo.llm_seo import LLMSEOGenerator
+        from plugins.publishing.youtube.publisher import YouTubePublisher
+        thumb_tpl = Path(__file__).resolve().parent.parent / "config" / "thumbnail_templates.json"
+        self.registry.register(PluginInfo(
+            name="pillow", version="0.1", contract="thumbnail_renderer",
+            label="Pillow", instance=PillowThumbnailRenderer(thumb_tpl),
+            config={}))
+        self.registry.register(PluginInfo(
+            name="llm_seo", version="0.1", contract="seo_generator",
+            label="LLM", instance=LLMSEOGenerator(), config={}))
+        self.registry.register(PluginInfo(
+            name="youtube", version="0.1", contract="publisher",
+            label="YouTube", instance=YouTubePublisher(), config={}))
 
     def _register_agents(self) -> None:
         from core.enums import JobStage
@@ -140,6 +156,26 @@ class Container:
                 make_editor_agent(editor, self.db, self.paths,
                                   default_format=self.config.editor.default_format,
                                   background_category=self.config.editor.background_category))
+        # Phase 4 post-approval agents.
+        from agents.thumbnail_agent import make_thumbnail_agent
+        from agents.seo_agent import make_seo_agent
+        from agents.publishing_agent import make_publishing_agent
+        renderer = self.registry.active("thumbnail_renderer")
+        if renderer is not None:
+            self.runner.register(JobStage.THUMBNAIL,
+                make_thumbnail_agent(renderer, self.db, self.paths))
+        gen = self.registry.active("seo_generator")
+        if gen is not None and llm is not None:
+            self.runner.register(JobStage.SEO,
+                make_seo_agent(gen, self.db, llm=llm))
+        publisher = self.registry.active("publisher")
+        if publisher is not None:
+            self.runner.register(JobStage.PUBLISH,
+                make_publishing_agent(publisher, self.db,
+                                      default_privacy=self.config.publishing.default_privacy))
+        # Approval service (the gate).
+        from app.approval_service import ApprovalService
+        self.approval = ApprovalService(self)
 
     def shutdown(self) -> None:
         if self.pool:

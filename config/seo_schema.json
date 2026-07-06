@@ -1,0 +1,10 @@
+{
+  "title": "string, max 70 chars, click-worthy but accurate",
+  "description": "string, max 300 chars",
+  "tags": "array of strings, max 15",
+  "hashtags": "array of short strings, max 5",
+  "pinned_comment": "string, an engagement-bait question",
+  "community_post": "string, a short poll or question",
+  "ctr_score": "number 0-100, predicted click-through",
+  "seo_score": "number 0-100, search optimization"
+}

@@ -214,3 +214,75 @@ def insert_media(conn, kind: str, category: str, name: str, path: str,
     )
     conn.commit()
     return cur.lastrowid
+
+
+# --- Approval helpers ------------------------------------------------------
+
+def list_pending_approval(conn) -> list:
+    """Jobs awaiting approval, joined with their video + story for the UI."""
+    return conn.execute(
+        "SELECT j.id AS job_id, j.created_at, v.id AS video_id, v.video_path, "
+        "v.thumbnail_path, s.title, s.body_text "
+        "FROM jobs j "
+        "LEFT JOIN videos v ON v.job_id=j.id "
+        "LEFT JOIN stories s ON s.job_id=j.id "
+        "WHERE j.stage='awaiting_approval' AND j.approval_state='pending' "
+        "ORDER BY j.id DESC").fetchall()
+
+
+def insert_thumbnail(conn, video_id: int, template: str, line1: str,
+                     line2: str, image_path: str, variant: int) -> int:
+    cur = conn.execute(
+        "INSERT INTO thumbnails (video_id, template, text_line1, text_line2, "
+        "image_path, variant) VALUES (?,?,?,?,?,?)",
+        (video_id, template, line1, line2, image_path, variant),
+    )
+    conn.commit()
+    return cur.lastrowid
+
+
+def get_thumbnails_by_job(conn, job_id: int) -> list:
+    return conn.execute(
+        "SELECT t.* FROM thumbnails t JOIN videos v ON t.video_id=v.id "
+        "WHERE v.job_id=?", (job_id,)).fetchall()
+
+
+def insert_seo(conn, video_id: int, title: str, description: str,
+               tags_json: str, hashtags_json: str, pinned_comment: str,
+               community_post: str, ctr_score: float, seo_score: float,
+               model: str = "") -> int:
+    cur = conn.execute(
+        "INSERT INTO seo (video_id, title, description, tags_json, hashtags_json, "
+        "pinned_comment, community_post, ctr_score, seo_score, model) "
+        "VALUES (?,?,?,?,?,?,?,?,?,?)",
+        (video_id, title, description, tags_json, hashtags_json,
+         pinned_comment, community_post, ctr_score, seo_score, model),
+    )
+    conn.commit()
+    return cur.lastrowid
+
+
+def get_seo_by_job(conn, job_id: int):
+    return conn.execute(
+        "SELECT seo.* FROM seo JOIN videos v ON seo.video_id=v.id "
+        "WHERE v.job_id=? ORDER BY seo.id DESC LIMIT 1", (job_id,)).fetchone()
+
+
+def insert_publish(conn, video_id: int, platform: str, remote_id: str,
+                   privacy: str, playlist_id: str, status: str,
+                   attempt_count: int, response_json: str = "") -> int:
+    cur = conn.execute(
+        "INSERT INTO publishes (video_id, platform, remote_id, privacy, "
+        "playlist_id, status, attempt_count, response_json) "
+        "VALUES (?,?,?,?,?,?,?,?)",
+        (video_id, platform, remote_id, privacy, playlist_id, status,
+         attempt_count, response_json),
+    )
+    conn.commit()
+    return cur.lastrowid
+
+
+def get_publish_by_job(conn, job_id: int):
+    return conn.execute(
+        "SELECT p.* FROM publishes p JOIN videos v ON p.video_id=v.id "
+        "WHERE v.job_id=? ORDER BY p.id DESC LIMIT 1", (job_id,)).fetchone()
