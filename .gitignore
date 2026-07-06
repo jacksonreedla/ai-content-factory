@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+.coverage.*
+*.egg-info/
+build/
+dist/
+.env
+secrets.json
