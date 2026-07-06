@@ -1,0 +1,38 @@
+{
+  "default": {
+    "font": "Arial",
+    "size": 48,
+    "primary_color": "&H00FFFFFF",
+    "outline_color": "&H00000000",
+    "outline": 3,
+    "bold": true,
+    "margin_v": 80
+  },
+  "minimal": {
+    "font": "Inter",
+    "size": 40,
+    "primary_color": "&H00FFFFFF",
+    "outline_color": "&H00000000",
+    "outline": 2,
+    "bold": false,
+    "margin_v": 100
+  },
+  "bold_lower": {
+    "font": "Arial Black",
+    "size": 54,
+    "primary_color": "&H0000F0FF",
+    "outline_color": "&H00000000",
+    "outline": 4,
+    "bold": true,
+    "margin_v": 140
+  },
+  "karaoke_pop": {
+    "font": "Arial Black",
+    "size": 50,
+    "primary_color": "&H0000B2FF",
+    "outline_color": "&H00000000",
+    "outline": 4,
+    "bold": true,
+    "margin_v": 90
+  }
+}

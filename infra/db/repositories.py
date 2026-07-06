@@ -122,3 +122,95 @@ def get_script_by_story(conn, story_id: int):
     return conn.execute(
         "SELECT * FROM scripts WHERE story_id=? ORDER BY id DESC LIMIT 1",
         (story_id,)).fetchone()
+
+
+# --- Voice clips -----------------------------------------------------------
+
+def insert_voice_clip(conn, script_id: int, engine: str, voice: str,
+                      speed: float, pitch: float, emotion: str,
+                      duration_sec: float, audio_path: str) -> int:
+    cur = conn.execute(
+        "INSERT INTO voice_clips (script_id, engine, voice, speed, pitch, "
+        "emotion, duration_sec, audio_path) VALUES (?,?,?,?,?,?,?,?)",
+        (script_id, engine, voice, speed, pitch, emotion,
+         duration_sec, audio_path),
+    )
+    conn.commit()
+    return cur.lastrowid
+
+
+def get_voice_clip_by_job(conn, job_id: int):
+    return conn.execute(
+        "SELECT vc.* FROM voice_clips vc "
+        "JOIN scripts s ON vc.script_id=s.id "
+        "JOIN stories st ON s.story_id=st.id "
+        "WHERE st.job_id=?", (job_id,)).fetchone()
+
+
+# --- Subtitles -------------------------------------------------------------
+
+def insert_subtitle(conn, voice_clip_id: int, fmt: str, styler: str,
+                    ass_path: str, srt_path: str) -> int:
+    cur = conn.execute(
+        "INSERT INTO subtitles (voice_clip_id, format, styler, ass_path, srt_path) "
+        "VALUES (?,?,?,?,?)",
+        (voice_clip_id, fmt, styler, ass_path, srt_path),
+    )
+    conn.commit()
+    return cur.lastrowid
+
+
+def get_subtitle_by_job(conn, job_id: int):
+    return conn.execute(
+        "SELECT sub.* FROM subtitles sub "
+        "JOIN voice_clips vc ON sub.voice_clip_id=vc.id "
+        "JOIN scripts s ON vc.script_id=s.id "
+        "JOIN stories st ON s.story_id=st.id "
+        "WHERE st.job_id=?", (job_id,)).fetchone()
+
+
+# --- Videos ----------------------------------------------------------------
+
+def insert_video(conn, job_id: int, format: str, aspect: str,
+                 width: int, height: int, duration_sec: float,
+                 background_id, music_id, video_path: str,
+                 thumbnail_path: str, size_bytes: int) -> int:
+    cur = conn.execute(
+        "INSERT INTO videos (job_id, format, aspect, width, height, duration_sec, "
+        "background_id, music_id, video_path, thumbnail_path, size_bytes) "
+        "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+        (job_id, format, aspect, width, height, duration_sec,
+         background_id, music_id, video_path, thumbnail_path, size_bytes),
+    )
+    conn.commit()
+    return cur.lastrowid
+
+
+def get_video_by_job(conn, job_id: int):
+    return conn.execute(
+        "SELECT * FROM videos WHERE job_id=? ORDER BY id DESC LIMIT 1",
+        (job_id,)).fetchone()
+
+
+# --- Media library ---------------------------------------------------------
+
+def list_media(conn, kind: str = "", category: str = "") -> list:
+    sql = "SELECT * FROM media_library WHERE 1=1"
+    args: list = []
+    if kind:
+        sql += " AND kind=?"; args.append(kind)
+    if category:
+        sql += " AND category=?"; args.append(category)
+    sql += " ORDER BY id DESC"
+    return conn.execute(sql, args).fetchall()
+
+
+def insert_media(conn, kind: str, category: str, name: str, path: str,
+                 duration_sec: float = 0.0, resolution: str = "") -> int:
+    cur = conn.execute(
+        "INSERT INTO media_library (kind, category, name, path, duration_sec, resolution) "
+        "VALUES (?,?,?,?,?,?)",
+        (kind, category, name, path, duration_sec, resolution),
+    )
+    conn.commit()
+    return cur.lastrowid
