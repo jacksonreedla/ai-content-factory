@@ -176,8 +176,28 @@ class Container:
         # Approval service (the gate).
         from app.approval_service import ApprovalService
         self.approval = ApprovalService(self)
+        # Analytics source (YouTube). Client is attached after OAuth.
+        from plugins.analytics.youtube.source import YouTubeAnalyticsSource
+        self.analytics_source = YouTubeAnalyticsSource()
+        self._analytics_timer = None
+        self._wizard_yt_secrets = None
+
+    def start_analytics_scheduler(self, interval_hours: float = 1.0) -> None:
+        """Start an hourly analytics pull. Requires a QApplication to exist."""
+        try:
+            from PySide6.QtCore import QTimer
+        except ImportError:
+            return
+        from agents.analytics_agent import run_once
+        timer = QTimer()
+        timer.setInterval(int(interval_hours * 3600 * 1000))
+        timer.timeout.connect(lambda: run_once(self.db, self.analytics_source))
+        timer.start()
+        self._analytics_timer = timer
 
     def shutdown(self) -> None:
+        if self._analytics_timer is not None:
+            self._analytics_timer.stop()
         if self.pool:
             self.pool.stop()
         if self.db:

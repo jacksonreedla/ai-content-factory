@@ -5,7 +5,6 @@ from PySide6.QtWidgets import (
 )
 
 from gui.theme import load_theme
-from gui.views.placeholder import PlaceholderView
 
 NAV = [
     ("Dashboard", "📊"),
@@ -52,23 +51,24 @@ class MainWindow(QMainWindow):
         sb.addWidget(self.nav, 1)
         lay.addWidget(self.sidebar)
 
-        # Stack: Dashboard + Research + Pipeline + Approval are real.
+        # Stack: all 8 sidebar entries are now real views.
         self.stack = QStackedWidget()
         from gui.views.dashboard import DashboardView
         from gui.views.research import ResearchView
         from gui.views.pipeline import PipelineView
         from gui.views.approval import ApprovalView
-        self.dashboard = DashboardView(container=container)
-        self.stack.addWidget(self.dashboard)
-        self.research = ResearchView(container=container)
-        self.stack.addWidget(self.research)
-        self.pipeline = PipelineView(container=container)
-        self.stack.addWidget(self.pipeline)
-        self.approval = ApprovalView(container=container)
-        self.stack.addWidget(self.approval)
-        placeholders = ["Library", "History", "Settings", "Logs"]
-        for label in placeholders:
-            self.stack.addWidget(PlaceholderView(label))
+        from gui.views.library import LibraryView
+        from gui.views.history import HistoryView
+        from gui.views.settings import SettingsView
+        from gui.views.logs import LogsView
+        self.dashboard = DashboardView(container=container); self.stack.addWidget(self.dashboard)
+        self.research = ResearchView(container=container); self.stack.addWidget(self.research)
+        self.pipeline = PipelineView(container=container); self.stack.addWidget(self.pipeline)
+        self.approval = ApprovalView(container=container); self.stack.addWidget(self.approval)
+        self.library = LibraryView(container=container); self.stack.addWidget(self.library)
+        self.history = HistoryView(container=container); self.stack.addWidget(self.history)
+        self.settings_view = SettingsView(container=container); self.stack.addWidget(self.settings_view)
+        self.logs = LogsView(container=container); self.stack.addWidget(self.logs)
         lay.addWidget(self.stack, 1)
 
         # Status bar.
