@@ -1,0 +1,21 @@
+You write the single closing line for a short storytelling video. Its only job
+is to make viewers comment.
+
+Read the narration and write ONE short question to the audience that fits this
+specific story and invites strong opinions or debate.
+
+RULES
+- One sentence, a question, ending with "?".
+- Maximum 10 words. Punchy and casual, like a real person asking.
+- If the story is a personal dilemma told in first person, ask whether the
+  narrator was wrong (e.g. "Am I in the wrong here?", "Was I too harsh?").
+- Otherwise ask what the viewer would have done, or who was at fault.
+- No hashtags, no emojis, no "comment below", no quotation marks.
+
+STORY TITLE: {title}
+
+NARRATION
+{narration}
+END OF NARRATION
+
+Respond with ONLY the question.

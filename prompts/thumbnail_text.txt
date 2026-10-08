@@ -1,0 +1,16 @@
+You are a YouTube thumbnail copywriter.
+Given this video narration, write punchy thumbnail text options.
+
+ORIGINAL TITLE: {title}
+
+NARRATION
+{narration}
+END OF NARRATION
+
+Rules per option:
+- Maximum 6 words.
+- Big emotional or curiosity trigger.
+- Readable at a glance, no punctuation except ? and !
+
+Respond with ONLY a JSON object:
+{{"options": ["...", "...", "..."]}}

@@ -1,0 +1,42 @@
+# AI Content Factory - Phase 1 dependencies
+# Install: pip install -r requirements.txt
+
+# GUI
+PySide6>=6.6
+
+# Reddit (optional now - Reddit disabled self-serve API keys under the
+# Responsible Builder Policy; access requires manual approval)
+praw>=7.7
+
+# RSS/Atom content source (optional - a stdlib fallback parser is used if
+# this is not installed, but feedparser is more robust)
+feedparser>=6.0
+
+# HTTP (Ollama / Claude / OpenAI / ElevenLabs REST)
+requests>=2.31
+
+# Phase 2 - audio
+faster-whisper>=1.0          # word-level subtitles
+pyttsx3>=2.90                # Windows SAPI fallback voices
+# Optional GPU acceleration for captions (NVIDIA CUDA 12). Without these,
+# captions run on CPU automatically. The app registers these DLLs at startup.
+nvidia-cublas-cu12           # ; sys_platform == "win32"
+nvidia-cudnn-cu12==9.*       # ; sys_platform == "win32"
+# Piper TTS is a standalone exe + .onnx voice model:
+#   https://github.com/rhasspy/piper/releases
+# FFmpeg (recommended, for audio normalization + Phase 3 video):
+#   winget install ffmpeg
+
+# Phase 3 - video
+pillow>=10.0                 # thumbnails
+# Video assembly uses FFmpeg directly (no moviepy needed):
+#   winget install ffmpeg
+
+# Phase 4 - publishing
+google-api-python-client>=2.100   # YouTube upload
+google-auth-oauthlib>=1.0
+
+# Kokoro TTS via ONNX (works on Python 3.13, no compiler needed).
+# Model files (~90 MB) auto-download to data/models on first use.
+kokoro-onnx>=0.4.0
+onnxruntime>=1.17

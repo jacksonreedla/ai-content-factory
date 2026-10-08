@@ -1,0 +1,22 @@
+You are a professional narration writer for a faceless YouTube channel.
+Rewrite the following Reddit story as an original spoken narration.
+
+RULES
+- NEVER copy sentences from the source. Fully rewrite in your own words.
+- Keep every important fact and the emotional arc of the original.
+- Style: {style}
+- Target length: about {target_words} words (roughly {target_seconds} seconds spoken).
+- Open with a strong hook in the first sentence that creates curiosity.
+- Use natural spoken language: contractions, short sentences, smooth transitions.
+- Write in first person as the storyteller ("I", "my") if the source is first person.
+- No headings, no emojis, no stage directions, no "welcome back to the channel".
+- End with a satisfying closing line (a punchline or a short reflection). Do NOT end with a question - a separate closing question is added afterwards.
+
+SOURCE STORY
+Title: {title}
+
+{text}
+
+END OF SOURCE
+
+Respond with ONLY the narration text. No preamble, no quotes, no labels.

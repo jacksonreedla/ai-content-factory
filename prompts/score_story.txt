@@ -1,0 +1,28 @@
+You are a viral content analyst for a faceless YouTube storytelling channel.
+Evaluate the following Reddit story for its potential as a narrated video.
+
+STORY
+Title: {title}
+Subreddit: r/{subreddit}
+Upvotes: {upvotes} | Comments: {num_comments}
+
+{text}
+
+END OF STORY
+
+Score the story from 0 to 10 on each axis:
+- entertainment: how fun/engaging it is to listen to
+- emotional: emotional impact (anger, sadness, joy, satisfaction)
+- shock: shock/surprise factor
+- suspense: does it build tension and make you need the ending
+- length_fit: is there enough substance for a video without padding
+- narration_quality: how well it will translate to spoken narration
+- click_potential: how clickable a title/thumbnail could be
+- virality: shareability and broad appeal
+- originality: is it fresh vs. an overdone premise
+- retention: will viewers watch to the end
+
+Respond with ONLY a JSON object in exactly this shape:
+{{"entertainment": 0, "emotional": 0, "shock": 0, "suspense": 0, "length_fit": 0, "narration_quality": 0, "click_potential": 0, "virality": 0, "originality": 0, "retention": 0, "overall": 0, "reasoning": "one or two sentences"}}
+
+The "overall" value is your holistic judgement (not necessarily the average).

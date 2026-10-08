@@ -1,59 +1,72 @@
-# agents/thumbnail_agent.py
-import logging
-import sqlite3
+"""Thumbnail Agent: frame + AI text overlay for each rendered video."""
+from __future__ import annotations
 
-from core.models import JobContext
-from infra.db.repositories import (
-    get_story_by_job, get_thumbnails_by_job, get_video_by_job,
-    insert_thumbnail,
-)
-from infra.storage import job_dir
+from pathlib import Path
 
-log = logging.getLogger(__name__)
-
-# Templates to render variants for the approval/A-B screen.
-_VARIANTS = [
-    ("bold_lower", "THIS HAPPENED", ""),
-    ("centered_pop", "YOU WON'T BELIEVE", "THIS"),
-    ("minimal_top", "REAL STORY", ""),
-]
+from agents.base import Agent, AgentContext, AgentResult
+from app.paths import THUMBS_DIR
+from database.repositories import StoryRepo, VideoRepo
+from editor.ffmpeg_render import RenderError
+from editor.thumbnail import ThumbnailError, extract_frame, generate_thumbnail
 
 
-def make_thumbnail_agent(renderer, conn: sqlite3.Connection, paths,
-                         templates=None):
-    """Build a THUMBNAIL-stage agent. Renders several variants."""
-    variants = templates or _VARIANTS
+class ThumbnailAgent(Agent):
+    name = "thumbnail"
+    stage = "thumbnail"
 
-    def agent(ctx: JobContext) -> JobContext:
-        row = get_story_by_job(conn, ctx.job_id)
-        if row is None:
-            raise RuntimeError(f"no story for job {ctx.job_id}")
-        video = get_video_by_job(conn, ctx.job_id)
-        if video is None:
-            raise RuntimeError(f"no video for job {ctx.job_id}")
-        ctx.progress(20, "Rendering thumbnail variants")
-        jd = job_dir(paths, ctx.job_id)
-        # Derive short, punchy lines from the title.
-        title = (row["title"] or "").upper()
-        words = title.split()
-        line1 = " ".join(words[:3]) if len(words) >= 3 else title
-        line2 = " ".join(words[3:5]) if len(words) > 3 else ""
-        for i, (tpl, l1, l2) in enumerate(variants):
-            out = jd / f"thumb_{tpl}.png"
+    def _thumbnail_text(self, ctx: AgentContext, video: dict) -> str:
+        """Ask the LLM for punchy text; fall back to the video title."""
+        title = video.get("title") or "You won't believe this"
+        try:
+            story = (StoryRepo(ctx.db).get(video["story_id"])
+                     if video.get("story_id") else None)
+            prompt = ctx.prompts.render(
+                "thumbnail_text", title=title,
+                narration=(story.text[:2000] if story else title))
+            data = ctx.llm.complete("thumbnail_text", prompt,
+                                    json_mode=True, temperature=0.8).parse_json()
+            options = [o for o in data.get("options", []) if o and o.strip()]
+            if options:
+                return options[0]
+        except Exception as exc:
+            self.log.warning("AI thumbnail text failed (%s); using title", exc)
+        words = title.split()[:6]
+        return " ".join(words)
+
+    def execute(self, ctx: AgentContext) -> AgentResult:
+        video_repo = VideoRepo(ctx.db)
+        videos = video_repo.needing_thumbnail()
+        if not videos:
+            return AgentResult(ok=True, skipped=True,
+                               message="no videos awaiting thumbnails")
+
+        font_path = ctx.config.get("thumbnail.font_path", "")
+        text_color = ctx.config.get("thumbnail.text_color", "#FFFFFF")
+        stroke_color = ctx.config.get("thumbnail.stroke_color", "#000000")
+
+        done, failed = 0, 0
+        for i, video in enumerate(videos):
+            ctx.report(self.stage, i / len(videos))
             try:
-                renderer.render(tpl, (l1 or line1, l2 or line2),
-                                out_path=str(out),
-                                bg_path=video["video_path"] or None)
-                insert_thumbnail(conn, video["id"], tpl,
-                                 l1 or line1, l2 or line2, str(out), i)
-            except Exception as e:
-                log.warning("thumbnail variant %s failed: %s", tpl, e)
-        # Point the video's thumbnail_path at the first variant.
-        thumbs = get_thumbnails_by_job(conn, ctx.job_id)
-        if thumbs:
-            conn.execute("UPDATE videos SET thumbnail_path=? WHERE id=?",
-                         (thumbs[0]["image_path"], video["id"]))
-            conn.commit()
-        ctx.progress(100, "Thumbnails ready")
-        return ctx
-    return agent
+                frame = extract_frame(
+                    Path(video["file_path"]),
+                    THUMBS_DIR / f"frame_{video['id']}.jpg", at_s=1.0)
+                text = self._thumbnail_text(ctx, video)
+                thumb = generate_thumbnail(
+                    frame, text, THUMBS_DIR / f"thumb_{video['id']}.jpg",
+                    font_path=font_path, text_color=text_color,
+                    stroke_color=stroke_color)
+                video_repo.set_thumbnail(video["id"], str(thumb))
+                done += 1
+            except (RenderError, ThumbnailError) as exc:
+                self.log.warning("Thumbnail failed for video %s: %s",
+                                 video["id"], exc)
+                failed += 1
+            except Exception:
+                self.log.exception("Unexpected thumbnail error for video %s",
+                                   video["id"])
+                failed += 1
+
+        return AgentResult(ok=done > 0 or failed == 0,
+                           message=f"{done} thumbnails created, {failed} failed",
+                           data={"done": done, "failed": failed})

@@ -1,1 +1,1 @@
-# agents/__init__.py
+"""Specialized agents - each owns exactly one pipeline responsibility."""

@@ -1,0 +1,18 @@
+You are a YouTube SEO expert for a faceless storytelling channel.
+Create upload metadata for a video with this narration (style: {style}).
+
+ORIGINAL TITLE: {title}
+
+NARRATION
+{narration}
+END OF NARRATION
+
+Requirements:
+- title: under 100 characters, high click-through, no clickbait lies, no ALL CAPS words except one allowed emphasis word.
+- description: 2-3 short paragraphs, first line hooks, include a call to subscribe, no hashtags inside the paragraphs.
+- hashtags: 3 relevant hashtags (with #).
+- tags: 10-15 comma-friendly search tags (no #).
+- pinned_comment: one engaging question to drive comments.
+
+Respond with ONLY a JSON object in exactly this shape:
+{{"title": "", "description": "", "hashtags": ["#..."], "tags": ["..."], "pinned_comment": ""}}

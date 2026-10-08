@@ -1,37 +1,46 @@
-# app/paths.py
-import os
+"""Central definition of every filesystem path the app uses."""
+from __future__ import annotations
+
 from pathlib import Path
 
+ROOT = Path(__file__).resolve().parent.parent
 
-class AppPaths:
-    """Cross-platform path resolution for user data.
+# Code/data folders shipped with the repo
+PROMPTS_DIR = ROOT / "prompts"
+ASSETS_DIR = ROOT / "assets"
+SETTINGS_DIR = ROOT / "settings"
+PLUGINS_DIR = ROOT / "plugins"
+DOCS_DIR = ROOT / "docs"
 
-    Override the user dir with $AICF_HOME (used by tests and portable installs).
-    """
+# Runtime folders (created on first launch, gitignored)
+DATA_DIR = ROOT / "data"
+DB_PATH = DATA_DIR / "factory.db"
+LOGS_DIR = DATA_DIR / "logs"
+OUTPUT_DIR = DATA_DIR / "output"          # finished videos
+AUDIO_DIR = DATA_DIR / "audio"            # generated voiceovers
+CAPTIONS_DIR = DATA_DIR / "captions"      # .srt / .ass files
+THUMBS_DIR = DATA_DIR / "thumbnails"
+CARDS_DIR = DATA_DIR / "cards"            # generated Reddit title-card images
+MEDIA_LIBRARY_DIR = DATA_DIR / "media_library"   # background gameplay etc.
+MUSIC_DIR = DATA_DIR / "music"
 
-    def __init__(self) -> None:
-        home = os.environ.get("AICF_HOME")
-        if home:
-            self.data_dir = Path(home)
-        else:
-            self.data_dir = Path.home() / ".aicf"
+CONFIG_PATH = SETTINGS_DIR / "config.json"
 
-    @property
-    def db_path(self) -> Path: return self.data_dir / "aicf.db"
-    @property
-    def settings_path(self) -> Path: return self.data_dir / "settings.json"
-    @property
-    def secrets_path(self) -> Path: return self.data_dir / "secrets.json"
-    @property
-    def logs_dir(self) -> Path: return self.data_dir / "logs"
-    @property
-    def library_dir(self) -> Path: return self.data_dir / "library"
-    @property
-    def jobs_dir(self) -> Path: return self.data_dir / "jobs"
-    @property
-    def plugins_dir(self) -> Path: return self.data_dir / "plugins"
+_RUNTIME_DIRS = (
+    DATA_DIR, LOGS_DIR, OUTPUT_DIR, AUDIO_DIR, CAPTIONS_DIR,
+    THUMBS_DIR, CARDS_DIR, MEDIA_LIBRARY_DIR, MUSIC_DIR, SETTINGS_DIR,
+)
 
-    def ensure(self) -> None:
-        for d in (self.data_dir, self.logs_dir, self.library_dir,
-                  self.jobs_dir, self.plugins_dir):
-            d.mkdir(parents=True, exist_ok=True)
+# Default subfolders of the background media library
+MEDIA_CATEGORIES = (
+    "minecraft", "subway_surfers", "gta", "satisfying",
+    "nature", "rain", "space", "ocean",
+)
+
+
+def ensure_dirs() -> None:
+    """Create all runtime directories if they do not exist."""
+    for d in _RUNTIME_DIRS:
+        d.mkdir(parents=True, exist_ok=True)
+    for cat in MEDIA_CATEGORIES:
+        (MEDIA_LIBRARY_DIR / cat).mkdir(exist_ok=True)

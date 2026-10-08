@@ -1,11 +1,13 @@
-.venv/
 __pycache__/
 *.pyc
 .pytest_cache/
-.coverage
-.coverage.*
+data/
+settings/config.json
+*.log
+.venv/
+venv/
+
+# never commit
+settings/*.bak
 *.egg-info/
-build/
-dist/
-.env
-secrets.json
+*.db
